@@ -1,0 +1,54 @@
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: realworld_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: super_admin_password
+      POSTGRES_DB: realworld_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - realworld_net
+
+  backend:
+    build: 
+      context: ./backend # Путь к папке бэкенда
+    container_name: realworld_backend
+    environment:
+      # Бэкенд должен знать, как подключиться к БД (используем имя сервиса 'db')
+      POSTGRES_SERVER: db
+      POSTGRES_USER: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_PASSWORD: super_admin_password
+      POSTGRES_DB: realworld_db
+      SECRET_KEY: local_super_secret_key
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    networks:
+      - realworld_net
+
+  frontend:
+    build: 
+      context: ./frontend # Путь к папке фронтенда
+    container_name: realworld_frontend
+    environment:
+      # Указываем фронтенду, куда слать API запросы
+      PUBLIC_API_URL: http://backend:8000/api
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - realworld_net
+
+volumes:
+  postgres_data:
+
+networks:
+  realworld_net:
+    driver: bridge
