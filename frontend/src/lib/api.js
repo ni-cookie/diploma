@@ -11,8 +11,8 @@ async function send({ method, path, data, token }) {
 		opts.body = JSON.stringify(data);
 	}
 
-	if (token) {
-		opts.headers['Authorization'] = `Token ${token}`;
+	if (token && token !== 'null') {
+    	opts.headers['Authorization'] = `Token ${token}`;
 	}
 
 	const res = await fetch(`${base}/${path}`, opts);
